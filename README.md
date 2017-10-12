@@ -5,6 +5,8 @@
 [![License](https://img.shields.io/cocoapods/l/AlertHelper.svg?style=flat)](http://cocoapods.org/pods/AlertHelper)
 [![Platform](https://img.shields.io/cocoapods/p/AlertHelper.svg?style=flat)](http://cocoapods.org/pods/AlertHelper)
 
+![Image of Yaktocat](https://raw.githubusercontent.com/P0nj4/AlertHelper/master/Example/example.gif)
+
 ## Example
 
 To run the example project, clone the repo, and run `pod install` from the Example directory first.
