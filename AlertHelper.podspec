@@ -9,7 +9,7 @@
 Pod::Spec.new do |s|
   s.name             = 'AlertHelper'
   s.version          = '0.1.0'
-  s.summary          = 'A short description of AlertHelper.'
+  s.summary          = 'Using UIAlertViewController every time you want to need a simple alert could be anoying, and it requires a lot of code just for a simple description/ok message. this is a pretty simple solution that lets developers present alert just using a list of buttons that the alert must contain, and then just neet to specify in what view controller it must be presented, and that's all'
 
 # This description is used to generate tags and improve search results.
 #   * Think: What does it do? Why did you write it? What is the focus?
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
 #   * Finally, don't worry about the indent, CocoaPods strips it!
 
   s.description      = <<-DESC
-TODO: Add long description of the pod here.
+Using UIAlertViewController every time you want to need a simple alert could be anoying, and it requires a lot of code just for a simple description/ok message. this is a pretty simple solution that lets developers present alert just using a list of buttons that the alert must contain, and then just neet to specify in what view controller it must be presented, and that's all
                        DESC
 
   s.homepage         = 'https://github.com/P0nj4/AlertHelper'

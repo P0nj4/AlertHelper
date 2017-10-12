@@ -1,0 +1,16 @@
+PODS:
+  - AlertHelper (0.1.0)
+
+DEPENDENCIES:
+  - AlertHelper (from `../`)
+
+EXTERNAL SOURCES:
+  AlertHelper:
+    :path: ../
+
+SPEC CHECKSUMS:
+  AlertHelper: 89c3755dd7ad1755108995fb070a086aafe5647c
+
+PODFILE CHECKSUM: 492db059356557811a1088f4054509cfb5627a4b
+
+COCOAPODS: 1.3.1
