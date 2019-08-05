@@ -124,7 +124,7 @@ public class AlertHelper {
     }
 
     // Build AlertController
-    private func buildAlertController(_ style: UIAlertControllerStyle, params: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
+    private func buildAlertController(_ style: UIAlertController.Style, params: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
 
         let alertController = UIAlertController(title: params.title, message: params.message, preferredStyle: style)
         let destructivOffset = 1
