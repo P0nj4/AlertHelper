@@ -2,201 +2,204 @@
 import UIKit
 
 public enum ActionSheetPopoverStyle: Int {
-    case normal = 0
-    case barButton
+  case normal = 0
+  case barButton
 }
 
 public enum AlertType: Int {
-    case simpleNotification
-    case cancelRequired
+  case simpleNotification
+  case cancelRequired
 }
 
 public struct Parameters {
-    var title: String?
-    var message: String?
-    var cancelButton: String?
-    var destructiveButtons: [String]?
-    var otherButtons: [String]?
-    var disabledButtons: [String]?
-    var inputFields: [InputField]?
-    var sender: AnyObject?
-    var arrowDirection: UIPopoverArrowDirection?
-    var popoverStyle: ActionSheetPopoverStyle = .normal
+  var title: String?
+  var message: String?
+  var cancelButton: String?
+  var destructiveButtons: [String]?
+  var otherButtons: [String]?
+  var disabledButtons: [String]?
+  var inputFields: [InputField]?
+  var sender: AnyObject?
+  var arrowDirection: UIPopoverArrowDirection?
+  var popoverStyle: ActionSheetPopoverStyle = .normal
 
-    public init(
-        title: String? = nil,
-        message: String? = nil,
-        cancelButton: String? = nil,
-        destructiveButtons: [String]? = nil,
-        otherButtons: [String]? = nil,
-        disabledButtons: [String]? = nil,
-        inputFields: [InputField]? = nil,
-        sender: AnyObject? = nil,
-        arrowDirection: UIPopoverArrowDirection? = nil,
-        popoverStyle: ActionSheetPopoverStyle = .normal
-    ) {
-        self.title = title
-        self.message = message
-        self.cancelButton = cancelButton
-        self.destructiveButtons = destructiveButtons
-        self.otherButtons = otherButtons
-        self.disabledButtons = disabledButtons
-        self.inputFields = inputFields
-        self.sender = sender
-        self.arrowDirection = arrowDirection
-        self.popoverStyle = popoverStyle
-    }
+  public init(
+    title: String? = nil,
+    message: String? = nil,
+    cancelButton: String? = nil,
+    destructiveButtons: [String]? = nil,
+    otherButtons: [String]? = nil,
+    disabledButtons: [String]? = nil,
+    inputFields: [InputField]? = nil,
+    sender: AnyObject? = nil,
+    arrowDirection: UIPopoverArrowDirection? = nil,
+    popoverStyle: ActionSheetPopoverStyle = .normal
+  ) {
+    self.title = title
+    self.message = message
+    self.cancelButton = cancelButton
+    self.destructiveButtons = destructiveButtons
+    self.otherButtons = otherButtons
+    self.disabledButtons = disabledButtons
+    self.inputFields = inputFields
+    self.sender = sender
+    self.arrowDirection = arrowDirection
+    self.popoverStyle = popoverStyle
+  }
 }
 
 public struct InputField {
-    var placeholder: String
-    var secure: Bool?
+  var placeholder: String
+  var secure: Bool?
 
-    public init(placeholder: String, secure: Bool?) {
-        self.placeholder = placeholder
-        self.secure = secure
-    }
+  public init(placeholder: String, secure: Bool?) {
+    self.placeholder = placeholder
+    self.secure = secure
+  }
 }
 
 public class AlertHelper {
 
-    public var animated: Bool = true
-    public var completionHandler: (() -> Void)?
-    public var textFields: [AnyObject]?
+  public var animated: Bool = true
+  public var completionHandler: (() -> Void)?
+  public var textFields: [AnyObject]?
 
-    public init() {
-        initialize()
+  public init() {
+    initialize()
+  }
+
+  private func initialize() {
+    animated = true
+    completionHandler = nil
+    textFields = nil
+  }
+
+  // Alert
+  public func showAlert(_ parent: UIViewController, title: String?, message: String?, button: String) -> UIAlertController {
+    let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+
+    // cancel
+    let cancelAction = UIAlertAction(title: button, style: .cancel, handler: nil)
+    alertController.addAction(cancelAction)
+
+    show(parent, ac: alertController)
+    return alertController
+  }
+
+  // Alert with Callback Handler
+  public func showAlertWithHandler(_ parent: UIViewController, parameters: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
+    let alertController: UIAlertController = buildAlertController(.alert, params: parameters) { buttonIndex in
+      handler(buttonIndex)
     }
 
-    private func initialize() {
-        animated = true
-        completionHandler = nil
-        textFields = nil
+    buttonDisabled(alertController, params: parameters)
+
+    show(parent, ac: alertController)
+    return alertController
+  }
+
+  // ActionSheet
+  public func showActionSheet(_ parent: UIViewController, parameters: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
+    let alertController: UIAlertController = buildAlertController(.actionSheet, params: parameters) { buttonIndex in
+      handler(buttonIndex)
     }
 
-    // Alert
-    public func showAlert(_ parent: UIViewController, title: String?, message: String?, button: String) {
-        let alertController = UIAlertController(title: title, message: message, preferredStyle: .alert)
+    buttonDisabled(alertController, params: parameters)
 
-        // cancel
-        let cancelAction = UIAlertAction(title: button, style: .cancel, handler: nil)
-        alertController.addAction(cancelAction)
+    if let popover = alertController.popoverPresentationController, let sender: AnyObject = parameters.sender, let arrowDirection = parameters.arrowDirection {
 
-        show(parent, ac: alertController)
-    }
-
-    // Alert with Callback Handler
-    public func showAlertWithHandler(_ parent: UIViewController, parameters: Parameters, handler: @escaping (String) -> ()) {
-        let alertController: UIAlertController = buildAlertController(.alert, params: parameters) { buttonIndex in
-            handler(buttonIndex)
+      switch parameters.popoverStyle {
+      case .barButton:
+        popover.barButtonItem = sender as? UIBarButtonItem
+      default:
+        if let sender = sender as? UIView {
+          popover.sourceView = sender
+          popover.sourceRect = sender.bounds
         }
+        break
+      }
 
-        buttonDisabled(alertController, params: parameters)
-
-        show(parent, ac: alertController)
+      popover.permittedArrowDirections = arrowDirection
     }
 
-    // ActionSheet
-    public func showActionSheet(_ parent: UIViewController, parameters: Parameters, handler: @escaping (String) -> ()) {
-        let alertController: UIAlertController = buildAlertController(.actionSheet, params: parameters) { buttonIndex in
-            handler(buttonIndex)
+    show(parent, ac: alertController)
+    return alertController
+  }
+
+  // Build AlertController
+  private func buildAlertController(_ style: UIAlertController.Style, params: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
+
+    let alertController = UIAlertController(title: params.title, message: params.message, preferredStyle: style)
+    let destructivOffset = 1
+    var othersOffset = destructivOffset
+
+    // cancel
+    if let cancel = params.cancelButton {
+      let cancelAction = UIAlertAction(title: cancel, style: .cancel) { _ in
+        handler(cancel)
+      }
+      alertController.addAction(cancelAction)
+    }
+
+    // destructive
+    if let destructive = params.destructiveButtons {
+      for i in 0..<destructive.count {
+        let destructiveAction = UIAlertAction(title: destructive[i], style: .destructive) { _ in
+          handler(destructive[i])
         }
+        alertController.addAction(destructiveAction)
 
-        buttonDisabled(alertController, params: parameters)
+        othersOffset += 1
+      }
+    }
 
-        if let popover = alertController.popoverPresentationController, let sender: AnyObject = parameters.sender, let arrowDirection = parameters.arrowDirection {
+    // others
+    if let others = params.otherButtons {
+      for i in 0..<others.count {
+        let otherAction = UIAlertAction(title: others[i], style: .default) { _ in
+          handler(others[i])
+        }
+        alertController.addAction(otherAction)
+      }
+    }
 
-            switch parameters.popoverStyle {
-            case .barButton:
-                popover.barButtonItem = sender as? UIBarButtonItem
-            default:
-                if let sender = sender as? UIView {
-                    popover.sourceView = sender
-                    popover.sourceRect = sender.bounds
-                }
-                break
+    // textFields
+    if style != .actionSheet {
+      if let inputFields = params.inputFields {
+        for i in 0..<inputFields.count {
+          alertController.addTextField(configurationHandler: { textField in
+            // placeholder
+            textField.placeholder = inputFields[i].placeholder
+            // secure
+            if let secure = inputFields[i].secure {
+              textField.isSecureTextEntry = secure
             }
-
-            popover.permittedArrowDirections = arrowDirection
+          })
         }
-
-        show(parent, ac: alertController)
+      }
     }
 
-    // Build AlertController
-    private func buildAlertController(_ style: UIAlertController.Style, params: Parameters, handler: @escaping (String) -> ()) -> UIAlertController {
+    return alertController
+  }
 
-        let alertController = UIAlertController(title: params.title, message: params.message, preferredStyle: style)
-        let destructivOffset = 1
-        var othersOffset = destructivOffset
-
-        // cancel
-        if let cancel = params.cancelButton {
-            let cancelAction = UIAlertAction(title: cancel, style: .cancel) { _ in
-                handler(cancel)
-            }
-            alertController.addAction(cancelAction)
-        }
-
-        // destructive
-        if let destructive = params.destructiveButtons {
-            for i in 0..<destructive.count {
-                let destructiveAction = UIAlertAction(title: destructive[i], style: .destructive) { _ in
-                    handler(destructive[i])
-                }
-                alertController.addAction(destructiveAction)
-
-                othersOffset += 1
-            }
-        }
-
-        // others
-        if let others = params.otherButtons {
-            for i in 0..<others.count {
-                let otherAction = UIAlertAction(title: others[i], style: .default) { _ in
-                    handler(others[i])
-                }
-                alertController.addAction(otherAction)
-            }
-        }
-
-        // textFields
-        if style != .actionSheet {
-            if let inputFields = params.inputFields {
-                for i in 0..<inputFields.count {
-                    alertController.addTextField(configurationHandler: { textField in
-                        // placeholder
-                        textField.placeholder = inputFields[i].placeholder
-                        // secure
-                        if let secure = inputFields[i].secure {
-                            textField.isSecureTextEntry = secure
-                        }
-                    })
-                }
-            }
-        }
-
-        return alertController
+  // Button Disabled
+  private func buttonDisabled(_ alertController: UIAlertController, params: Parameters) {
+    guard let buttons = params.disabledButtons else {
+      return
     }
 
-    // Button Disabled
-    private func buttonDisabled(_ alertController: UIAlertController, params: Parameters) {
-        guard let buttons = params.disabledButtons else {
-            return
-        }
-
-        for alertAction in alertController.actions {
-            let action = alertAction as UIAlertAction
-            for title in buttons where action.title == title {
-                action.isEnabled = false
-            }
-        }
+    for alertAction in alertController.actions {
+      let action = alertAction as UIAlertAction
+      for title in buttons where action.title == title {
+        action.isEnabled = false
+      }
     }
+  }
 
-    // Appear Alert
-    private func show(_ vc: UIViewController, ac: UIAlertController) {
-        textFields = ac.textFields
-        vc.present(ac, animated: animated, completion: completionHandler)
-    }
+  // Appear Alert
+  private func show(_ vc: UIViewController, ac: UIAlertController) {
+    textFields = ac.textFields
+    vc.present(ac, animated: animated, completion: completionHandler)
+  }
 
 }
